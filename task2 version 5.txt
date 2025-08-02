@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Smart AI chatbot with weather information and business startup guidance">
+    <title>AI-Powered Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .chatbot-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .bot-avatar {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .bot-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .bot-status {
+            font-size: 12px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .bot-avatar-small {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .user-avatar-small {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+            white-space: pre-line;
+        }
+
+        .bot-message {
+            background: white;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            max-width: 80%;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #9ca3af;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: #4facfe;
+        }
+
+        .send-button {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+        }
+
+        .send-button:active {
+            transform: scale(0.95);
+        }
+
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .quick-reply {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quick-reply:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+
+        .minimize-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .minimize-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .chatbot-minimized {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transition: transform 0.2s ease;
+        }
+
+        .chatbot-minimized:hover {
+            transform: scale(1.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .weather-card {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .business-card {
+            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 10px 0;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .chatbot-container {
+                height: calc(100vh - 20px);
+                max-width: 100%;
+                border-radius: 10px;
+                margin: 0;
+            }
+            
+            .chatbot-header {
+                padding: 15px;
+            }
+            
+            .chat-messages {
+                padding: 15px;
+            }
+            
+            .chat-input-container {
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            
+            .chatbot-container {
+                height: calc(100vh - 10px);
+                border-radius: 5px;
+            }
+            
+            .message-content {
+                max-width: 85%;
+                font-size: 13px;
+            }
+            
+            .quick-reply {
+                font-size: 11px;
+                padding: 6px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chatbot-container" id="chatbot">
+        <div class="chatbot-header">
+            <button class="minimize-button" onclick="minimizeChat()">−</button>
+            <div class="bot-avatar">🤖</div>
+            <div class="bot-name">Smart AI Assistant</div>
+            <div class="bot-status">
+                <div class="status-dot"></div>
+                Weather & Business Expert
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message">
+                <div class="message-avatar bot-avatar-small">🤖</div>
+                <div class="message-content bot-message">
+                    Hello! I'm your Smart AI Assistant. I can help you with:
+                    
+                    🌤️ Weather information for any city
+                    🚀 Business startup guidance and ideas
+                    💼 General business questions
+                    
+                    Try asking me "What's the weather in London?" or "How do I start a business?"
+                    <div class="quick-replies">
+                        <div class="quick-reply" onclick="sendQuickReply('Weather in New York')">Weather NYC</div>
+                        <div class="quick-reply" onclick="sendQuickReply('How to start a business')">Start Business</div>
+                        <div class="quick-reply" onclick="sendQuickReply('Business ideas')">Business Ideas</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="message" id="typingIndicator" style="margin: 0 20px;">
+            <div class="message-avatar bot-avatar-small">🤖</div>
+            <div class="typing-indicator">
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Ask about weather or business..." onkeypress="handleKeyPress(event)">
+                <button class="send-button" onclick="sendMessage()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22,2 15,22 11,13 2,9"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="chatbot-minimized" id="chatbotMinimized" onclick="maximizeChat()">
+        💬
+        <div class="notification-badge" id="notificationBadge">1</div>
+    </div>
+
+    <script>
+        // Weather data for major cities
+        const weatherData = {
+            'new york': { temp: '22°C', condition: 'Partly Cloudy', humidity: '65%', wind: '12 km/h', emoji: '⛅' },
+            'london': { temp: '18°C', condition: 'Light Rain', humidity: '78%', wind: '8 km/h', emoji: '🌧️' },
+            'paris': { temp: '20°C', condition: 'Sunny', humidity: '55%', wind: '10 km/h', emoji: '☀️' },
+            'tokyo': { temp: '25°C', condition: 'Clear', humidity: '60%', wind: '15 km/h', emoji: '🌤️' },
+            'sydney': { temp: '19°C', condition: 'Cloudy', humidity: '70%', wind: '18 km/h', emoji: '☁️' },
+            'dubai': { temp: '35°C', condition: 'Hot & Sunny', humidity: '45%', wind: '5 km/h', emoji: '🌞' },
+            'mumbai': { temp: '28°C', condition: 'Humid', humidity: '85%', wind: '12 km/h', emoji: '🌫️' },
+            'berlin': { temp: '16°C', condition: 'Overcast', humidity: '72%', wind: '14 km/h', emoji: '☁️' },
+            'moscow': { temp: '12°C', condition: 'Cold', humidity: '68%', wind: '20 km/h', emoji: '❄️' },
+            'singapore': { temp: '30°C', condition: 'Tropical', humidity: '80%', wind: '8 km/h', emoji: '🌴' }
+        };
+
+        // Business startup guides
+        const businessGuides = {
+            'ecommerce': {
+                title: '🛒 E-commerce Business',
+                steps: [
+                    '1. Choose your niche and products',
+                    '2. Research your target market',
+                    '3. Create a business plan',
+                    '4. Set up your online store (Shopify, WooCommerce)',
+                    '5. Source products or suppliers',
+                    '6. Set up payment processing',
+                    '7. Create marketing strategy',
+                    '8. Launch and optimize'
+                ],
+                cost: '$2,000 - $10,000',
+                timeframe: '2-4 months'
+            },
+            'consulting': {
+                title: '💼 Consulting Business',
+                steps: [
+                    '1. Define your expertise area',
+                    '2. Identify target clients',
+                    '3. Create service packages',
+                    '4. Build professional website',
+                    '5. Develop marketing materials',
+                    '6. Network and build relationships',
+                    '7. Set pricing strategy',
+                    '8. Deliver exceptional service'
+                ],
+                cost: '$500 - $3,000',
+                timeframe: '1-2 months'
+            },
+            'restaurant': {
+                title: '🍕 Restaurant Business',
+                steps: [
+                    '1. Develop concept and menu',
+                    '2. Create detailed business plan',
+                    '3. Secure funding and location',
+                    '4. Obtain licenses and permits',
+                    '5. Design and build out space',
+                    '6. Hire and train staff',
+                    '7. Market your opening',
+                    '8. Focus on customer experience'
+                ],
+                cost: '$50,000 - $200,000',
+                timeframe: '6-12 months'
+            },
+            'tech': {
+                title: '💻 Tech Startup',
+                steps: [
+                    '1. Validate your idea with users',
+                    '2. Build minimum viable product (MVP)',
+                    '3. Gather user feedback',
+                    '4. Iterate and improve',
+                    '5. Develop go-to-market strategy',
+                    '6. Seek funding if needed',
+                    '7. Scale your team',
+                    '8. Focus on growth metrics'
+                ],
+                cost: '$5,000 - $50,000',
+                timeframe: '3-8 months'
+            }
+        };
+
+        // Business ideas by category
+        const businessIdeas = {
+            'online': [
+                'Dropshipping store',
+                'Digital marketing agency',
+                'Online course creation',
+                'Affiliate marketing',
+                'Social media management',
+                'Virtual assistant services'
+            ],
+            'local': [
+                'Food truck',
+                'Cleaning services',
+                'Pet grooming',
+                'Tutoring services',
+                'Home repair services',
+                'Personal training'
+            ],
+            'tech': [
+                'Mobile app development',
+                'SaaS platform',
+                'AI chatbot services',
+                'Web development agency',
+                'Cybersecurity consulting',
+                'Data analytics services'
+            ],
+            'creative': [
+                'Graphic design studio',
+                'Photography business',
+                'Content creation agency',
+                'Event planning',
+                'Interior design',
+                'Handmade crafts store'
+            ]
+        };
+
+        let messageCount = 0;
+        let isMinimized = false;
+
+        function extractCityFromInput(input) {
+            const cities = Object.keys(weatherData);
+            for (let city of cities) {
+                if (input.includes(city)) {
+                    return city;
+                }
+            }
+            return null;
+        }
+
+        function getWeatherResponse(city) {
+            const weather = weatherData[city];
+            if (!weather) return null;
+            
+            return `🌤️ Weather in ${city.charAt(0).toUpperCase() + city.slice(1)}:
+
+${weather.emoji} ${weather.condition}
+🌡️ Temperature: ${weather.temp}
+💧 Humidity: ${weather.humidity}
+💨 Wind: ${weather.wind}
+
+Have a great day! Need weather for another city?`;
+        }
+
+        function getBusinessStartupGuide(type) {
+            const guide = businessGuides[type];
+            if (!guide) return null;
+
+            let response = `${guide.title}\n\n📋 Step-by-step guide:\n`;
+            guide.steps.forEach(step => {
+                response += `${step}\n`;
+            });
+            response += `\n💰 Estimated cost: ${guide.cost}`;
+            response += `\n⏰ Timeframe: ${guide.timeframe}`;
+            response += `\n\nWould you like more details about any specific step?`;
+            
+            return response;
+        }
+
+        function getBusinessIdeas(category) {
+            const ideas = businessIdeas[category];
+            if (!ideas) return null;
+
+            let response = `💡 ${category.charAt(0).toUpperCase() + category.slice(1)} Business Ideas:\n\n`;
+            ideas.forEach((idea, index) => {
+                response += `${index + 1}. ${idea}\n`;
+            });
+            response += `\nWant a detailed guide for any of these? Just ask!`;
+            
+            return response;
+        }
+
+        function findBestResponse(userInput) {
+            const input = userInput.toLowerCase().trim();
+            
+            // Weather queries
+            if (input.includes('weather') || input.includes('temperature') || input.includes('forecast')) {
+                const city = extractCityFromInput(input);
+                if (city) {
+                    return getWeatherResponse(city);
+                } else {
+                    return "🌤️ I can provide weather information for major cities like New York, London, Paris, Tokyo, Sydney, Dubai, Mumbai, Berlin, Moscow, and Singapore. Which city would you like to know about?";
+                }
+            }
+
+            // Business startup queries
+            if (input.includes('start') && (input.includes('business') || input.includes('company'))) {
+                if (input.includes('ecommerce') || input.includes('online store') || input.includes('shop')) {
+                    return getBusinessStartupGuide('ecommerce');
+                } else if (input.includes('consulting') || input.includes('consultant')) {
+                    return getBusinessStartupGuide('consulting');
+                } else if (input.includes('restaurant') || input.includes('food')) {
+                    return getBusinessStartupGuide('restaurant');
+                } else if (input.includes('tech') || input.includes('app') || input.includes('software')) {
+                    return getBusinessStartupGuide('tech');
+                } else {
+                    return `🚀 Starting a Business - General Guide:
+
+1. 💡 Validate your business idea
+2. 📊 Research your market
+3. 📝 Write a business plan
+4. 💰 Secure funding
+5. 📋 Register your business
+6. 🏢 Set up operations
+7. 📈 Launch and market
+8. 📊 Monitor and grow
+
+What type of business interests you?
+• E-commerce/Online store
+• Consulting services  
+• Restaurant/Food business
+• Tech startup
+
+I can provide detailed guides for each!`;
+                }
+            }
+
+            // Business ideas
+            if (input.includes('business idea') || input.includes('business ideas')) {
+                if (input.includes('online') || input.includes('internet')) {
+                    return getBusinessIdeas('online');
+                } else if (input.includes('local') || input.includes('community')) {
+                    return getBusinessIdeas('local');
+                } else if (input.includes('tech') || input.includes('technology')) {
+                    return getBusinessIdeas('tech');
+                } else if (input.includes('creative') || input.includes('art')) {
+                    return getBusinessIdeas('creative');
+                } else {
+                    return `💡 Business Ideas by Category:
+
+🌐 Online Businesses:
+• Dropshipping, Digital marketing, Online courses
+
+🏘️ Local Businesses:
+• Food truck, Cleaning services, Pet grooming
+
+💻 Tech Businesses:
+• App development, SaaS, AI services
+
+🎨 Creative Businesses:
+• Design studio, Photography, Event planning
+
+Which category interests you most?`;
+                }
+            }
+
+            // Funding questions
+            if (input.includes('funding') || input.includes('investment') || input.includes('money')) {
+                return `💰 Business Funding Options:
+
+1. 🏦 Bank Loans - Traditional financing
+2. 👥 Angel Investors - Early-stage funding
+3. 🚀 Venture Capital - Growth funding
+4. 👨‍👩‍👧‍👦 Friends & Family - Personal network
+5. 💳 Crowdfunding - Public funding
+6. 🏛️ Government Grants - Free funding
+7. 💼 Bootstrapping - Self-funding
+
+Each has different requirements and terms. What stage is your business in?`;
+            }
+
+            // Marketing questions
+            if (input.includes('marketing') || input.includes('promote') || input.includes('customers')) {
+                return `📈 Marketing Strategies for New Businesses:
+
+1. 📱 Social Media Marketing
+2. 🔍 Search Engine Optimization (SEO)
+3. 📧 Email Marketing
+4. 🤝 Networking & Partnerships
+5. 📝 Content Marketing
+6. 💰 Paid Advertising
+7. 👥 Referral Programs
+8. 🎯 Local Marketing
+
+Start with 2-3 strategies that fit your budget and audience. Need specific advice for your business type?`;
+            }
+
+            // Greetings
+            if (input.includes('hello') || input.includes('hi') || input.includes('hey')) {
+                return "Hello! I'm your Smart AI Assistant. I can help you with weather information for major cities and provide comprehensive business startup guidance. What would you like to know?";
+            }
+
+            // Thanks
+            if (input.includes('thank') || input.includes('thanks')) {
+                return "You're very welcome! I'm here to help with weather updates and business guidance anytime. Is there anything else you'd like to know?";
+            }
+
+            // Goodbye
+            if (input.includes('bye') || input.includes('goodbye')) {
+                return "Goodbye! Feel free to come back anytime for weather updates or business advice. Good luck with your ventures! 👋";
+            }
+
+            // Default response
+            return "I specialize in weather information and business startup guidance. Try asking:\n\n🌤️'What's the weather in [city]?'\n🚀 'How do I start a business?'\n💡 'Give me business ideas'\n\nWhat would you like to know?";
+        }
+
+        function addMessage(content, isUser = false, showQuickReplies = false, isSpecial = false) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : ''}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = `message-avatar ${isUser ? 'user-avatar-small' : 'bot-avatar-small'}`;
+            avatar.textContent = isUser ? '👤' : '🤖';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = `message-content ${isUser ? 'user-message' : 'bot-message'}`;
+            
+            // Handle special formatting for weather and business responses
+            if (isSpecial && !isUser) {
+                if (content.includes('Weather in')) {
+                    const weatherCard = document.createElement('div');
+                    weatherCard.className = 'weather-card';
+                    weatherCard.textContent = content;
+                    messageContent.appendChild(weatherCard);
+                } else if (content.includes('Business') || content.includes('Step-by-step')) {
+                    const businessCard = document.createElement('div');
+                    businessCard.className = 'business-card';
+                    businessCard.textContent = content;
+                    messageContent.appendChild(businessCard);
+                } else {
+                    messageContent.textContent = content;
+                }
+            } else {
+                messageContent.textContent = content;
+            }
+            
+            // Add quick replies for certain responses
+            if (!isUser && showQuickReplies) {
+                const quickReplies = document.createElement('div');
+                quickReplies.className = 'quick-replies';
+                
+                if (content.includes('weather')) {
+                    quickReplies.innerHTML = `
+                        <div class="quick-reply" onclick="sendQuickReply('Weather in London')">London Weather</div>
+                        <div class="quick-reply" onclick="sendQuickReply('Weather in Tokyo')">Tokyo Weather</div>
+                        <div class="quick-reply" onclick="sendQuickReply('Weather in Paris')">Paris Weather</div>
+                    `;
+                } else if (content.includes('business')) {
+                    quickReplies.innerHTML = `
+                        <div class="quick-reply" onclick="sendQuickReply('Start an ecommerce business')">E-commerce Guide</div>
+                        <div class="quick-reply" onclick="sendQuickReply('Tech startup ideas')">Tech Ideas</div>
+                        <div class="quick-reply" onclick="sendQuickReply('Business funding options')">Funding Help</div>
+                    `;
+                } else {
+                    quickReplies.innerHTML = `
+                        <div class="quick-reply" onclick="sendQuickReply('Weather in New York')">NYC Weather</div>
+                        <div class="quick-reply" onclick="sendQuickReply('How to start a business')">Start Business</div>
+                        <div class="quick-reply" onclick="sendQuickReply('Creative business ideas')">Business Ideas</div>
+                    `;
+                }
+                messageContent.appendChild(quickReplies);
+            }
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            messageCount++;
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'flex';
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message === '') return;
+            
+            // Add user message
+            addMessage(message, true);
+            input.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Simulate AI processing time
+            setTimeout(() => {
+                hideTypingIndicator();
+                const response = findBestResponse(message);
+                const isSpecialResponse = response.includes('Weather in') || response.includes('Step-by-step') || response.includes('Business Ideas');
+                addMessage(response, false, Math.random() > 0.6, isSpecialResponse);
+                
+                // Update notification if minimized
+                if (isMinimized) {
+                    updateNotification();
+                }
+            }, Math.random() * 2000 + 1000);
+        }
+
+        function sendQuickReply(message) {
+            document.getElementById('chatInput').value = message;
+            sendMessage();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function minimizeChat() {
+            document.getElementById('chatbot').style.display = 'none';
+            document.getElementById('chatbotMinimized').style.display = 'flex';
+            isMinimized = true;
+        }
+
+        function maximizeChat() {
+            document.getElementById('chatbot').style.display = 'flex';
+            document.getElementById('chatbotMinimized').style.display = 'none';
+            document.getElementById('notificationBadge').style.display = 'none';
+            isMinimized = false;
+        }
+
+        function updateNotification() {
+            const badge = document.getElementById('notificationBadge');
+            badge.style.display = 'flex';
+            badge.textContent = '1';
+        }
+
+        // Initialize chatbot
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ensure all elements are loaded
+            setTimeout(() => {
+                const chatInput = document.getElementById('chatInput');
+                if (chatInput) {
+                    chatInput.focus();
+                }
+                
+                // Add initial welcome message after page loads
+                setTimeout(() => {
+                    addMessage("🎉 Chatbot loaded successfully! Try asking 'Weather in London' or 'How to start a business'", false, true);
+                }, 1000);
+            }, 100);
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'968cd5ce5762a6da',t:'MTc1NDEyOTk0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
